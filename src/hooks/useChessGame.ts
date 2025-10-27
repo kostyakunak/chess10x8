@@ -103,21 +103,25 @@ export function useChessGame(roomId: string | null) {
       setPlayerColor('w');
       setGameStarted(room.game_started || false);
       setStatus(room.status as any);
+      console.log('✅ White player: gameStarted =', room.game_started);
     } else if (room.black_player_id === playerId) {
       console.log('✅ Player is black');
       setPlayerColor('b');
       setGameStarted(room.game_started || false);
       setStatus(room.status as any);
+      console.log('✅ Black player: gameStarted =', room.game_started);
     } else {
       if (!room.white_player_id) {
         console.log('🤍 Assigning player as white (first player)');
         setPlayerColor('w');
-        await supabase
+        const result = await supabase
           .from('game_rooms')
           .update({ white_player_id: playerId })
           .eq('id', roomId);
+        console.log('🤍 Updated white_player_id:', result);
         setGameStarted(false);
         setStatus('waiting');
+        console.log('🤍 Game started set to: false, status: waiting');
       } else if (!room.black_player_id) {
         console.log('⚫ Assigning player as black (second player)');
         setPlayerColor('b');
@@ -125,7 +129,7 @@ export function useChessGame(roomId: string | null) {
         if (!room.game_started) {
           gameStartedUpdate = true;
         }
-        await supabase
+        const result = await supabase
           .from('game_rooms')
           .update({
             black_player_id: playerId,
@@ -133,15 +137,21 @@ export function useChessGame(roomId: string | null) {
             status: 'active'
           })
           .eq('id', roomId);
+        console.log('⚫ Updated black_player_id and gameStarted:', result);
         if (gameStartedUpdate) {
-          console.log('🎮 Game started!');
+          console.log('🎮 Game started! Setting gameStarted to true');
           setGameStarted(true);
           setStatus('active');
+        } else {
+          console.log('ℹ️ Game was already started');
+          setGameStarted(true);
+          setStatus(room.status as any);
         }
+        console.log('⚫ After update: gameStarted should be true');
       }
     }
     
-    console.log('🎯 Final state:', { 
+    console.log('🎯 Final state check:', { 
       playerColor, 
       gameStarted, 
       status,
