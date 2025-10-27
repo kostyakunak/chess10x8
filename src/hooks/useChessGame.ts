@@ -351,16 +351,17 @@ export function useChessGame(roomId: string | null) {
   }, []);
 
   useEffect(() => {
-    console.log('🔍 useChessGame useEffect triggered', { roomId });
-    if (roomId) {
+    console.log('🔍 useChessGame useEffect triggered', { roomId, currentRoomId });
+    
+    if (roomId && roomId !== currentRoomId) {
       console.log('📥 Loading existing room:', roomId);
       setCurrentRoomId(roomId);
       loadGameState(roomId);
-    } else {
+    } else if (!roomId && !currentRoomId) {
       console.log('🆕 Creating new game');
       createNewGame();
     }
-  }, []);
+  }, [roomId, currentRoomId]);
 
   useEffect(() => {
     if (!currentRoomId) return;
