@@ -101,14 +101,10 @@ export function useChessGame(roomId: string | null) {
     if (room.white_player_id === playerId) {
       console.log('✅ Player is white');
       setPlayerColor('w');
-      setGameStarted(room.game_started || false);
-      setStatus(room.status as any);
       console.log('✅ White player: gameStarted =', room.game_started);
     } else if (room.black_player_id === playerId) {
       console.log('✅ Player is black');
       setPlayerColor('b');
-      setGameStarted(room.game_started || false);
-      setStatus(room.status as any);
       console.log('✅ Black player: gameStarted =', room.game_started);
     } else {
       if (!room.white_player_id) {
