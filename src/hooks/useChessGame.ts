@@ -357,10 +357,9 @@ export function useChessGame(roomId: string | null) {
       console.log('📥 Loading existing room:', roomId);
       setCurrentRoomId(roomId);
       loadGameState(roomId);
-    } else if (!roomId && !currentRoomId) {
-      console.log('🆕 Creating new game');
-      createNewGame();
     }
+    // УБРАНО: автоматическое создание игры
+    // Теперь createNewGame вызывается только когда пользователь явно нажимает кнопку
   }, [roomId, currentRoomId]);
 
   useEffect(() => {
