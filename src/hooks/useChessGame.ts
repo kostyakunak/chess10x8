@@ -23,6 +23,9 @@ export function useChessGame(roomId: string | null) {
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(roomId);
   const [promotionPending, setPromotionPending] = useState<{ from: Square; to: Square } | null>(null);
   const [playerId] = useState(() => `player_${Math.random().toString(36).substr(2, 9)}`);
+  
+  // Для версионирования: отслеживаем последний applied updated_at
+  const [lastAppliedUpdate, setLastAppliedUpdate] = useState<string | null>(null);
 
   const findKingSquare = useCallback((pos: Position, color: PieceColor): Square | null => {
     for (const square in pos) {
@@ -47,6 +50,15 @@ export function useChessGame(roomId: string | null) {
       console.error('❌ Error loading room or room not found:', error);
       return;
     }
+
+    // Версионирование: игнорируем старые обновления
+    if (lastAppliedUpdate && room.updated_at && room.updated_at <= lastAppliedUpdate) {
+      console.log('⏭️ Skipping outdated update:', room.updated_at, '<=', lastAppliedUpdate);
+      return;
+    }
+    
+    console.log('✅ Applying update:', room.updated_at);
+    setLastAppliedUpdate(room.updated_at);
 
     const { data: moves } = await supabase
       .from('game_moves')
@@ -98,15 +110,22 @@ export function useChessGame(roomId: string | null) {
       isGameStarted: room.game_started
     });
 
+    // Умный merge: не затираем playerColor если он уже установлен
+    let shouldAssignPlayer = false;
     if (room.white_player_id === playerId) {
-      console.log('✅ Player is white');
-      setPlayerColor('w');
+      if (playerColor !== 'w') {
+        console.log('✅ Player is white (setting)');
+        setPlayerColor('w');
+      }
       console.log('✅ White player: gameStarted =', room.game_started);
     } else if (room.black_player_id === playerId) {
-      console.log('✅ Player is black');
-      setPlayerColor('b');
+      if (playerColor !== 'b') {
+        console.log('✅ Player is black (setting)');
+        setPlayerColor('b');
+      }
       console.log('✅ Black player: gameStarted =', room.game_started);
     } else {
+      shouldAssignPlayer = true;
       if (!room.white_player_id) {
         console.log('🤍 Assigning player as white (first player)');
         setPlayerColor('w');
@@ -149,7 +168,7 @@ export function useChessGame(roomId: string | null) {
     } else {
       setKingInCheck(null);
     }
-  }, [playerId, findKingSquare]);
+  }, [playerId, findKingSquare, lastAppliedUpdate, playerColor]);
 
   const createNewGame = useCallback(async () => {
     console.log('🎯 createNewGame called');

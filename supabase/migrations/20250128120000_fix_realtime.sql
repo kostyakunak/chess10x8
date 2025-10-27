@@ -1,8 +1,8 @@
 -- Fix Realtime synchronization issues
 -- This migration fixes postgres_changes not firing
 
--- 1) Ensure PRIMARY KEY exists (should already be there)
-ALTER TABLE public.game_rooms ADD CONSTRAINT IF NOT EXISTS game_rooms_pkey PRIMARY KEY (id);
+-- 1) Ensure PRIMARY KEY exists (should already be there from original migration)
+-- We skip this because PRIMARY KEY was already added in the create table statement
 
 -- 2) Set REPLICA IDENTITY FULL for correct UPDATE/DELETE events
 ALTER TABLE public.game_rooms REPLICA IDENTITY FULL;
