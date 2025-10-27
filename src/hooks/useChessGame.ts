@@ -432,9 +432,16 @@ export function useChessGame(roomId: string | null) {
         console.log('🔔 Subscription status:', status);
       });
 
+    // Polling fallback - обновляем каждые 3 секунды
+    const pollInterval = setInterval(() => {
+      console.log('🔄 Polling: checking for updates...');
+      loadGameState(currentRoomId);
+    }, 3000);
+
     return () => {
-      console.log('🔕 Cleaning up subscription for room:', currentRoomId);
+      console.log('🔕 Cleaning up subscription and polling for room:', currentRoomId);
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [currentRoomId, loadGameState]);
 
