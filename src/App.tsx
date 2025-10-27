@@ -8,6 +8,7 @@ import { useChessGame } from './hooks/useChessGame';
 
 function App() {
   const [roomId, setRoomId] = useState<string | null>(null);
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -112,8 +113,9 @@ function App() {
         )}
 
         <div className="flex flex-col lg:flex-row gap-6 items-start justify-center">
-          <div className="flex-shrink-0 flex justify-center">
-            <ChessBoard
+          <div className="flex justify-center w-full lg:w-auto">
+            <div className="max-w-[min(90vw,820px)]">
+              <ChessBoard
               position={position}
               legalMoves={legalMoves}
               selectedSquare={selectedSquare}
@@ -123,9 +125,10 @@ function App() {
               flipped={flipped}
               gameStarted={gameStarted}
             />
+            </div>
           </div>
 
-          <div className="flex-1 max-w-md space-y-4">
+          <div className="flex-1 max-w-md w-full space-y-4">
             <GameControls
               roomId={currentRoomId || ''}
               activeColor={activeColor}
@@ -135,6 +138,10 @@ function App() {
               onOfferDraw={handleOfferDraw}
               onFlipBoard={() => {/* No longer needed - auto flip */}}
               flipped={flipped}
+              onCopy={() => {
+                setShowCopiedToast(true);
+                setTimeout(() => setShowCopiedToast(false), 2000);
+              }}
             />
 
             <MoveHistory moves={history} />
@@ -147,6 +154,13 @@ function App() {
           color={activeColor === 'w' ? 'b' : 'w'}
           onSelect={handlePromotion}
         />
+      )}
+
+      {/* Toast уведомление */}
+      {showCopiedToast && (
+        <div className="fixed bottom-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
+          ✓ Ссылка скопирована!
+        </div>
       )}
     </div>
   );
