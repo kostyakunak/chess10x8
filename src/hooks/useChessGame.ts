@@ -35,13 +35,18 @@ export function useChessGame(roomId: string | null) {
   }, []);
 
   const loadGameState = useCallback(async (roomId: string) => {
+    console.log('🔄 loadGameState called for room:', roomId);
     const { data: room, error } = await supabase
       .from('game_rooms')
       .select('*')
       .eq('id', roomId)
       .maybeSingle();
 
-    if (error || !room) return;
+    console.log('📊 Room data:', { room, error });
+    if (error || !room) {
+      console.error('❌ Error loading room or room not found:', error);
+      return;
+    }
 
     const { data: moves } = await supabase
       .from('game_moves')
@@ -81,18 +86,29 @@ export function useChessGame(roomId: string | null) {
       }
     }
 
+    console.log('👤 Player assignment', {
+      playerId,
+      whitePlayer: room.white_player_id,
+      blackPlayer: room.black_player_id,
+      isGameStarted: room.game_started
+    });
+
     if (room.white_player_id === playerId) {
+      console.log('✅ Player is white');
       setPlayerColor('w');
     } else if (room.black_player_id === playerId) {
+      console.log('✅ Player is black');
       setPlayerColor('b');
     } else {
       if (!room.white_player_id) {
+        console.log('🤍 Assigning player as white (first player)');
         setPlayerColor('w');
         await supabase
           .from('game_rooms')
           .update({ white_player_id: playerId })
           .eq('id', roomId);
       } else if (!room.black_player_id) {
+        console.log('⚫ Assigning player as black (second player)');
         setPlayerColor('b');
         let gameStartedUpdate = false;
         if (!room.game_started) {
@@ -107,6 +123,7 @@ export function useChessGame(roomId: string | null) {
           })
           .eq('id', roomId);
         if (gameStartedUpdate) {
+          console.log('🎮 Game started!');
           setGameStarted(true);
           setStatus('active');
         }
@@ -122,9 +139,11 @@ export function useChessGame(roomId: string | null) {
   }, [playerId, findKingSquare]);
 
   const createNewGame = useCallback(async () => {
+    console.log('🎯 createNewGame called');
     const initialPosition = getInitialPosition();
     const fen = generateFEN(initialPosition, 'w', 'KQkq', '-', 0, 1);
 
+    console.log('📤 Creating room in database...');
     const { data, error } = await supabase
       .from('game_rooms')
       .insert({
@@ -142,9 +161,11 @@ export function useChessGame(roomId: string | null) {
       .single();
 
     if (error || !data) {
-      console.error('Error creating game:', error);
+      console.error('❌ Error creating game:', error);
       return;
     }
+
+    console.log('✅ Room created with ID:', data.id);
 
     setCurrentRoomId(data.id);
     setPosition(initialPosition);
@@ -330,10 +351,13 @@ export function useChessGame(roomId: string | null) {
   }, []);
 
   useEffect(() => {
+    console.log('🔍 useChessGame useEffect triggered', { roomId });
     if (roomId) {
+      console.log('📥 Loading existing room:', roomId);
       setCurrentRoomId(roomId);
       loadGameState(roomId);
     } else {
+      console.log('🆕 Creating new game');
       createNewGame();
     }
   }, []);

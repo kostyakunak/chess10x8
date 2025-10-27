@@ -13,8 +13,12 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
+    console.log('🌐 URL params parsed:', { room, fullUrl: window.location.href });
     if (room) {
+      console.log('✅ Room ID found in URL:', room);
       setRoomId(room);
+    } else {
+      console.log('ℹ️ No room ID in URL - will show join screen');
     }
   }, []);
 
@@ -39,22 +43,30 @@ function App() {
   } = useChessGame(roomId);
 
   const handleJoinRoom = (id: string) => {
+    console.log('🎮 handleJoinRoom called with ID:', id);
     setRoomId(id);
     const newUrl = `${window.location.origin}?room=${id}`;
+    console.log('📍 Updating URL to:', newUrl);
     window.history.pushState({}, '', newUrl);
   };
 
   const handleCreateNew = () => {
+    console.log('🆕 handleCreateNew called');
     createNewGame();
   };
 
   // Показываем экран подключения только если нет roomId в URL
+  console.log('🎨 App render state:', { roomId, currentRoomId });
+  
   if (!roomId && !currentRoomId) {
+    console.log('📝 Showing JoinRoom screen');
     return <JoinRoom onJoin={handleJoinRoom} onCreateNew={handleCreateNew} />;
   }
 
   // Не показываем JoinRoom если есть ID комнаты (идет загрузка или уже загружено)
   const isLoading = !currentRoomId && roomId;
+  
+  console.log('🔄 Loading state:', { isLoading, roomId, currentRoomId });
   
   if (isLoading) {
     return (
