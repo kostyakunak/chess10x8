@@ -64,6 +64,9 @@ export function useChessGame(roomId: string | null) {
     setStatus(room.status);
     setGameStarted(room.game_started);
 
+    console.log('📍 Position loaded:', fenData.position);
+    console.log('📊 History loaded:', moves?.length || 0, 'moves');
+    
     if (moves) {
       const moveHistory: Move[] = moves.map(m => ({
         from: m.from_square,
@@ -79,10 +82,12 @@ export function useChessGame(roomId: string | null) {
         san: m.san,
       }));
       setHistory(moveHistory);
+      console.log('✅ History set:', moveHistory);
 
       if (moveHistory.length > 0) {
         const lastM = moveHistory[moveHistory.length - 1];
         setLastMove({ from: lastM.from, to: lastM.to });
+        console.log('🎯 Last move:', lastM);
       }
     }
 
@@ -136,7 +141,26 @@ export function useChessGame(roomId: string | null) {
       }
     }
     
-    console.log('🎯 Final state:', { playerColor, gameStarted, status });
+    console.log('🎯 Final state:', { 
+      playerColor, 
+      gameStarted, 
+      status,
+      activeColor,
+      playerId,
+      roomId,
+      whitePlayerId: room.white_player_id,
+      blackPlayerId: room.black_player_id 
+    });
+    console.log('🎯 State after loadGameState:', {
+      position: Object.keys(position).length,
+      activeColor,
+      castlingRights,
+      enPassant,
+      history: history.length,
+      gameStarted,
+      playerColor,
+      status
+    });
 
     if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
       const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
@@ -298,11 +322,24 @@ export function useChessGame(roomId: string | null) {
   }, [position, activeColor, castlingRights, enPassant, halfmoveClock, fullmoveNumber, history, legalMoves, currentRoomId, findKingSquare]);
 
   const handleSquareClick = useCallback((square: Square) => {
-    if (promotionPending) return;
-
-    if (!gameStarted || !playerColor || playerColor !== activeColor) {
+    console.log('🖱️ Square clicked:', square);
+    console.log('🔒 Click check:', { gameStarted, playerColor, activeColor, promotionPending });
+    
+    if (promotionPending) {
+      console.log('⏸️ Promotion pending, ignoring click');
       return;
     }
+
+    if (!gameStarted || !playerColor || playerColor !== activeColor) {
+      console.log('❌ Click blocked:', { 
+        gameStarted: !gameStarted, 
+        noPlayerColor: !playerColor, 
+        notYourTurn: playerColor !== activeColor 
+      });
+      return;
+    }
+    
+    console.log('✅ Click allowed');
 
     if (selectedSquare) {
       const move = legalMoves.find(m => m.to === square);
