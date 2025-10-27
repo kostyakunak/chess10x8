@@ -406,6 +406,8 @@ export function useChessGame(roomId: string | null) {
   useEffect(() => {
     if (!currentRoomId) return;
 
+    console.log('🔔 Setting up realtime subscription for room:', currentRoomId);
+
     const channel = supabase
       .channel(`room:${currentRoomId}`)
       .on('postgres_changes', {
@@ -413,7 +415,8 @@ export function useChessGame(roomId: string | null) {
         schema: 'public',
         table: 'game_rooms',
         filter: `id=eq.${currentRoomId}`,
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Realtime UPDATE received for game_rooms:', payload);
         loadGameState(currentRoomId);
       })
       .on('postgres_changes', {
@@ -421,12 +424,16 @@ export function useChessGame(roomId: string | null) {
         schema: 'public',
         table: 'game_moves',
         filter: `room_id=eq.${currentRoomId}`,
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Realtime INSERT received for game_moves:', payload);
         loadGameState(currentRoomId);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔔 Subscription status:', status);
+      });
 
     return () => {
+      console.log('🔕 Cleaning up subscription for room:', currentRoomId);
       supabase.removeChannel(channel);
     };
   }, [currentRoomId, loadGameState]);
