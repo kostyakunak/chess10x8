@@ -7,7 +7,6 @@ import JoinRoom from './components/JoinRoom';
 import { useChessGame } from './hooks/useChessGame';
 
 function App() {
-  const [flipped, setFlipped] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,6 +40,9 @@ function App() {
     handleOfferDraw,
     createNewGame,
   } = useChessGame(roomId);
+
+  // Автоматически переворачиваем доску для черных
+  const flipped = playerColor === 'b';
 
   const handleJoinRoom = (id: string) => {
     console.log('🎮 handleJoinRoom called with ID:', id);
@@ -131,7 +133,7 @@ function App() {
               onNewGame={createNewGame}
               onResign={handleResign}
               onOfferDraw={handleOfferDraw}
-              onFlipBoard={() => setFlipped(!flipped)}
+              onFlipBoard={() => {/* No longer needed - auto flip */}}
               flipped={flipped}
             />
 
