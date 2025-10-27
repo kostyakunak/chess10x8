@@ -96,9 +96,13 @@ export function useChessGame(roomId: string | null) {
     if (room.white_player_id === playerId) {
       console.log('✅ Player is white');
       setPlayerColor('w');
+      setGameStarted(room.game_started || false);
+      setStatus(room.status as any);
     } else if (room.black_player_id === playerId) {
       console.log('✅ Player is black');
       setPlayerColor('b');
+      setGameStarted(room.game_started || false);
+      setStatus(room.status as any);
     } else {
       if (!room.white_player_id) {
         console.log('🤍 Assigning player as white (first player)');
@@ -107,6 +111,8 @@ export function useChessGame(roomId: string | null) {
           .from('game_rooms')
           .update({ white_player_id: playerId })
           .eq('id', roomId);
+        setGameStarted(false);
+        setStatus('waiting');
       } else if (!room.black_player_id) {
         console.log('⚫ Assigning player as black (second player)');
         setPlayerColor('b');
@@ -129,6 +135,8 @@ export function useChessGame(roomId: string | null) {
         }
       }
     }
+    
+    console.log('🎯 Final state:', { playerColor, gameStarted, status });
 
     if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
       const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
