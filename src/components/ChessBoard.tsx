@@ -138,16 +138,16 @@ export default function ChessBoard({
                     <div
                       draggable
                       onDragStart={() => handleDragStart(square)}
-                      className="text-4xl sm:text-5xl md:text-6xl cursor-grab active:cursor-grabbing select-none leading-none"
+                      className="cursor-grab active:cursor-grabbing select-none"
                       style={{ 
-                        fontFamily: 'Arial, sans-serif',
-                        fontSize: 'inherit',
-                        lineHeight: 1,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         width: '100%',
-                        height: '100%'
+                        height: '100%',
+                        fontSize: 'clamp(2rem, 4vw, 3.5rem)',
+                        lineHeight: '1',
+                        fontFamily: 'Arial, "Segoe UI Emoji", sans-serif'
                       }}
                     >
                       {PIECE_SYMBOLS[`${piece.color}${piece.type}`]}
