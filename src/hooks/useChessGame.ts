@@ -138,26 +138,14 @@ export function useChessGame(roomId: string | null) {
           })
           .eq('id', roomId);
         console.log('⚫ Updated black_player_id and gameStarted:', result);
-        if (gameStartedUpdate) {
-          console.log('🎮 Game started! Setting gameStarted to true');
-          setGameStarted(true);
-          setStatus('active');
-        } else {
-          console.log('ℹ️ Game was already started');
-          setGameStarted(true);
-          setStatus(room.status as any);
-        }
-        console.log('⚫ After update: gameStarted should be true');
+        // Всегда устанавливаем gameStarted=true когда черный игрок присоединяется
+        setGameStarted(true);
+        setStatus('active');
+        console.log('🎮 Game started! setGameStarted(true) called');
       }
     }
     
-    // Логирование состояния произойдет после setState в компоненте
-    
-    // Принудительно обновляем состояние для создателя игры
-    // который уже был назначен как white player
-    if (room.white_player_id && !room.black_player_id && room.game_started === false) {
-      console.log('⚠️ Game not started yet, waiting for second player');
-    }
+    console.log('✅ loadGameState completed for player:', playerId);
 
     if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
       const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
