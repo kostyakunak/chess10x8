@@ -48,9 +48,23 @@ function App() {
     createNewGame();
   };
 
-  // Показываем экран подключения если нет roomId в URL
+  // Показываем экран подключения только если нет roomId в URL
   if (!roomId && !currentRoomId) {
     return <JoinRoom onJoin={handleJoinRoom} onCreateNew={handleCreateNew} />;
+  }
+
+  // Не показываем JoinRoom если есть ID комнаты (идет загрузка или уже загружено)
+  const isLoading = !currentRoomId && roomId;
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Загрузка игры...</h2>
+          <p className="text-slate-400">Подключение к комнате</p>
+        </div>
+      </div>
+    );
   }
 
   return (
