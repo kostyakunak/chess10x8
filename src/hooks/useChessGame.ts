@@ -399,20 +399,26 @@ export function useChessGame(roomId: string | null) {
     });
   }, [playerColor, gameStarted, status, activeColor, playerId]);
 
+  // Realtime subscription - single channel per roomId
   useEffect(() => {
     if (!currentRoomId) return;
 
     console.log('🔔 Setting up realtime subscription for room:', currentRoomId);
 
     const channel = supabase
-      .channel(`room:${currentRoomId}`)
+      .channel(`room:${currentRoomId}`, {
+        config: {
+          broadcast: { ack: true },
+          presence: { key: playerId }
+        }
+      })
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'game_rooms',
         filter: `id=eq.${currentRoomId}`,
       }, (payload) => {
-        console.log('🔔 Realtime UPDATE received for game_rooms:', payload);
+        console.log('🔔 postgres_changes:', payload);
         loadGameState(currentRoomId);
       })
       .on('postgres_changes', {
@@ -421,25 +427,35 @@ export function useChessGame(roomId: string | null) {
         table: 'game_moves',
         filter: `room_id=eq.${currentRoomId}`,
       }, (payload) => {
-        console.log('🔔 Realtime INSERT received for game_moves:', payload);
+        console.log('🔔 game_moves INSERT:', payload);
         loadGameState(currentRoomId);
+      })
+      .on('broadcast', { event: 'move' }, ({ payload }) => {
+        console.log('🔔 broadcast move:', payload);
+        // Handle move application directly
       })
       .subscribe((status) => {
         console.log('🔔 Subscription status:', status);
       });
 
-    // Polling fallback - обновляем каждые 3 секунды
-    const pollInterval = setInterval(() => {
-      console.log('🔄 Polling: checking for updates...');
-      loadGameState(currentRoomId);
-    }, 3000);
+    // Polling fallback only when subscription is not SUBSCRIBED
+    let pollInterval: NodeJS.Timeout | null = null;
+    
+    const subscribeStatus = channel.state;
+    if (subscribeStatus !== 'SUBSCRIBED') {
+      console.log('⚠️ Realtime not subscribed, activating polling');
+      pollInterval = setInterval(() => {
+        console.log('🔄 Polling: checking for updates...');
+        loadGameState(currentRoomId);
+      }, 3000);
+    }
 
     return () => {
-      console.log('🔕 Cleaning up subscription and polling for room:', currentRoomId);
+      console.log('🔕 Cleaning up subscription for room:', currentRoomId);
+      if (pollInterval) clearInterval(pollInterval);
       supabase.removeChannel(channel);
-      clearInterval(pollInterval);
     };
-  }, [currentRoomId, loadGameState]);
+  }, [currentRoomId]); // Убрали loadGameState из deps!
 
   return {
     position,
