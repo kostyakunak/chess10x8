@@ -19,6 +19,9 @@ dist-ssr
 .env.local
 .env.production
 
+# Bolt
+.bolt/
+
 # IDE
 .vscode/*
 !.vscode/extensions.json
