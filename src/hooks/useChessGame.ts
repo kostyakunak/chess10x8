@@ -151,26 +151,13 @@ export function useChessGame(roomId: string | null) {
       }
     }
     
-    console.log('🎯 Final state check:', { 
-      playerColor, 
-      gameStarted, 
-      status,
-      activeColor,
-      playerId,
-      roomId,
-      whitePlayerId: room.white_player_id,
-      blackPlayerId: room.black_player_id 
-    });
-    console.log('🎯 State after loadGameState:', {
-      position: Object.keys(position).length,
-      activeColor,
-      castlingRights,
-      enPassant,
-      history: history.length,
-      gameStarted,
-      playerColor,
-      status
-    });
+    // Логирование состояния произойдет после setState в компоненте
+    
+    // Принудительно обновляем состояние для создателя игры
+    // который уже был назначен как white player
+    if (room.white_player_id && !room.black_player_id && room.game_started === false) {
+      console.log('⚠️ Game not started yet, waiting for second player');
+    }
 
     if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
       const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
@@ -416,6 +403,17 @@ export function useChessGame(roomId: string | null) {
     // УБРАНО: автоматическое создание игры
     // Теперь createNewGame вызывается только когда пользователь явно нажимает кнопку
   }, [roomId, currentRoomId]);
+
+  // Логируем состояние после обновления
+  useEffect(() => {
+    console.log('📊 State updated:', { 
+      playerColor, 
+      gameStarted, 
+      status, 
+      playerId,
+      activeColor
+    });
+  }, [playerColor, gameStarted, status, activeColor, playerId]);
 
   useEffect(() => {
     if (!currentRoomId) return;
