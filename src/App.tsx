@@ -3,6 +3,7 @@ import ChessBoard from './components/ChessBoard';
 import MoveHistory from './components/MoveHistory';
 import GameControls from './components/GameControls';
 import PromotionModal from './components/PromotionModal';
+import JoinRoom from './components/JoinRoom';
 import { useChessGame } from './hooks/useChessGame';
 
 function App() {
@@ -36,6 +37,21 @@ function App() {
     handleOfferDraw,
     createNewGame,
   } = useChessGame(roomId);
+
+  const handleJoinRoom = (id: string) => {
+    setRoomId(id);
+    const newUrl = `${window.location.origin}?room=${id}`;
+    window.history.pushState({}, '', newUrl);
+  };
+
+  const handleCreateNew = () => {
+    createNewGame();
+  };
+
+  // Показываем экран подключения если нет roomId в URL
+  if (!roomId && !currentRoomId) {
+    return <JoinRoom onJoin={handleJoinRoom} onCreateNew={handleCreateNew} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
