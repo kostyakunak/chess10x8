@@ -85,15 +85,6 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-            Шахматы 10×8
-          </h1>
-          <p className="text-slate-300 text-sm md:text-base">
-            Расширенный вариант с коридорами A и J
-          </p>
-        </header>
-
         {status === 'checkmate' && (
           <div className="mb-4 p-4 bg-red-600 text-white rounded-lg text-center font-bold">
             Мат! Победа: {activeColor === 'w' ? 'Чёрные' : 'Белые'}

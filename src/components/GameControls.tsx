@@ -74,7 +74,7 @@ export default function GameControls({
       <div className="space-y-2">
         <button
           onClick={onFlipBoard}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-amber-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <RotateCcw className="w-4 h-4" />
           Перевернуть доску
@@ -82,7 +82,7 @@ export default function GameControls({
 
         <button
           onClick={onNewGame}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-amber-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Новая игра
@@ -91,7 +91,7 @@ export default function GameControls({
         <button
           onClick={onOfferDraw}
           disabled={!playerColor}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-amber-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <HandshakeIcon className="w-4 h-4" />
           Предложить ничью
@@ -100,7 +100,7 @@ export default function GameControls({
         <button
           onClick={onResign}
           disabled={!playerColor}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-amber-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Flag className="w-4 h-4" />
           Сдаться
