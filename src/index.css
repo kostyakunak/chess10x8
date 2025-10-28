@@ -1,3 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Bangers&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}
+
+@keyframes teleport-flash {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 20px #8b5cf6); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+@keyframes board-invert {
+  0%, 100% { filter: none; }
+  10%, 90% { filter: invert(1) hue-rotate(180deg) saturate(3); }
+  20%, 80% { filter: none; }
+  30%, 70% { filter: invert(1) hue-rotate(180deg) saturate(3); }
+  40%, 60% { filter: none; }
+  50% { filter: invert(1) hue-rotate(180deg) saturate(3); }
+}
+
+@keyframes rook-blink {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+  50% { box-shadow: 0 0 30px 10px rgba(139, 92, 246, 0.8); }
+}
+
+.teleport-active {
+  animation: rook-blink 0.3s ease-in-out 3;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.5), transparent) !important;
+}
+
+.board-teleporting {
+  animation: board-invert 1s ease-in-out;
+}
+
+.piece-teleporting {
+  animation: teleport-flash 1s ease-in-out;
+}
+
+.comic-defeat {
+  font-family: 'Bangers', cursive;
+  font-size: 4rem;
+  color: #dc2626;
+  text-shadow:
+    3px 3px 0 #000,
+    -3px -3px 0 #000,
+    3px -3px 0 #000,
+    -3px 3px 0 #000,
+    5px 5px 10px rgba(0,0,0,0.5);
+  letter-spacing: 0.1em;
+  transform-origin: center;
+  animation: defeat-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes defeat-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}

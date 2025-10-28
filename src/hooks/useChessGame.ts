@@ -395,6 +395,64 @@ export function useChessGame(roomId: string | null) {
     alert('Ничья предложена (функция в разработке)');
   }, []);
 
+  const handleRookTeleport = useCallback(async (fromSquare: Square, toSquare: Square) => {
+    const myRook = position[fromSquare];
+    const enemyRook = position[toSquare];
+    if (!myRook || !enemyRook || myRook.type !== 'R' || enemyRook.type !== 'R') return;
+    if (myRook.color === enemyRook.color) return;
+
+    const newPosition = { ...position };
+    newPosition[fromSquare] = enemyRook;
+    newPosition[toSquare] = myRook;
+
+    const moveRecord: Move = {
+      from: fromSquare,
+      to: toSquare,
+      piece: 'R',
+      color: myRook.color,
+      castleType: 'force',
+      san: 'O-O',
+      isCheck: false,
+      isCheckmate: false,
+    };
+
+    const newActiveColor: PieceColor = activeColor === 'w' ? 'b' : 'w';
+    const fen = generateFEN(newPosition, newActiveColor, castlingRights, enPassant, halfmoveClock, fullmoveNumber);
+
+    if (currentRoomId) {
+      await supabase
+        .from('game_rooms')
+        .update({
+          fen,
+          active_color: newActiveColor,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', currentRoomId);
+
+      await supabase
+        .from('game_moves')
+        .insert({
+          room_id: currentRoomId,
+          move_number: history.length + 1,
+          color: myRook.color,
+          from_square: fromSquare,
+          to_square: toSquare,
+          piece: 'R',
+          castle_type: 'force',
+          san: 'O-O',
+          is_check: false,
+          is_checkmate: false,
+        });
+    }
+
+    setPosition(newPosition);
+    setActiveColor(newActiveColor);
+    setHistory([...history, moveRecord]);
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    setLastMove({ from: fromSquare, to: toSquare });
+  }, [position, activeColor, castlingRights, enPassant, halfmoveClock, fullmoveNumber, history, currentRoomId]);
+
   useEffect(() => {
     console.log('🔍 useChessGame useEffect triggered', { roomId, currentRoomId });
     
@@ -494,5 +552,6 @@ export function useChessGame(roomId: string | null) {
     handleResign,
     handleOfferDraw,
     createNewGame,
+    handleRookTeleport,
   };
 }

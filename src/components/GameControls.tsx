@@ -32,19 +32,19 @@ export default function GameControls({
   const isPlayerTurn = playerColor === activeColor;
 
   return (
-    <div className="bg-emerald-900/20 backdrop-blur rounded-2xl border border-emerald-700/30 shadow-xl p-4 space-y-4">
+    <div className="bg-stone-800/60 backdrop-blur rounded-2xl border border-amber-900/40 shadow-xl p-4 space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-emerald-50 mb-2">Код комнаты</h3>
+        <h3 className="text-sm font-semibold text-amber-100 mb-2" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Код комнаты</h3>
         <div className="flex gap-2">
           <input
             type="text"
             value={roomId}
             readOnly
-            className="flex-1 px-3 py-2 bg-emerald-900/30 border border-emerald-700/30 rounded text-sm font-mono text-emerald-50"
+            className="flex-1 px-3 py-2 bg-stone-900/50 border border-amber-900/40 rounded text-sm font-mono text-amber-100"
           />
           <button
             onClick={copyRoomLink}
-            className="px-3 py-2 bg-emerald-600/80 hover:bg-emerald-600 text-white rounded transition-colors"
+            className="px-3 py-2 bg-amber-700/80 hover:bg-amber-700 text-amber-50 rounded transition-colors"
             title="Копировать ссылку"
           >
             <Copy className="w-4 h-4" />
@@ -59,12 +59,12 @@ export default function GameControls({
               activeColor === 'w' ? 'bg-gray-200 dark:bg-gray-300 border-2 border-gray-800 dark:border-gray-600' : 'bg-gray-800 dark:bg-gray-600'
             }`}
           />
-          <span className="text-sm font-semibold text-emerald-50">
+          <span className="text-sm font-semibold text-amber-100" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
             Ход: {activeColor === 'w' ? 'Белые' : 'Чёрные'}
           </span>
         </div>
         {playerColor && (
-          <p className="text-xs text-emerald-200/70">
+          <p className="text-xs text-amber-200/70" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
             Вы играете: {playerColor === 'w' ? 'Белые' : 'Чёрные'}
             {isPlayerTurn && ' (ваш ход)'}
           </p>
@@ -74,7 +74,8 @@ export default function GameControls({
       <div className="space-y-2">
         <button
           onClick={onFlipBoard}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-700/70 hover:bg-amber-700 text-amber-50 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
           <RotateCcw className="w-4 h-4" />
           Перевернуть доску
@@ -82,7 +83,8 @@ export default function GameControls({
 
         <button
           onClick={onNewGame}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-700/70 hover:bg-amber-700 text-amber-50 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
           <Plus className="w-4 h-4" />
           Новая игра
@@ -91,7 +93,8 @@ export default function GameControls({
         <button
           onClick={onOfferDraw}
           disabled={!playerColor}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-amber-700/70 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-amber-50 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
           <HandshakeIcon className="w-4 h-4" />
           Предложить ничью
@@ -100,7 +103,8 @@ export default function GameControls({
         <button
           onClick={onResign}
           disabled={!playerColor}
-          className="w-full px-4 py-2 bg-amber-200/60 hover:bg-amber-200/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-red-800/70 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-amber-50 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
           <Flag className="w-4 h-4" />
           Сдаться

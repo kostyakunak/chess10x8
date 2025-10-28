@@ -4,6 +4,7 @@ import MoveHistory from './components/MoveHistory';
 import GameControls from './components/GameControls';
 import PromotionModal from './components/PromotionModal';
 import JoinRoom from './components/JoinRoom';
+import MusicPlayer from './components/MusicPlayer';
 import { useChessGame } from './hooks/useChessGame';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
     handleResign,
     handleOfferDraw,
     createNewGame,
+    handleRookTeleport,
   } = useChessGame(roomId);
 
   // Автоматически переворачиваем доску для черных
@@ -73,32 +75,27 @@ function App() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Загрузка игры...</h2>
-          <p className="text-slate-400">Подключение к комнате</p>
+      <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 flex items-center justify-center">
+        <div className="text-center text-amber-100">
+          <h2 className="text-3xl font-semibold mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Загрузка игры...</h2>
+          <p className="text-amber-200/70 italic">Подключение к комнате</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 p-4 md:p-8">
+      <MusicPlayer />
       <div className="max-w-7xl mx-auto">
-        {status === 'checkmate' && (
-          <div className="mb-4 p-4 bg-red-600 text-white rounded-lg text-center font-bold">
-            Мат! Победа: {activeColor === 'w' ? 'Чёрные' : 'Белые'}
-          </div>
-        )}
-
         {status === 'stalemate' && (
-          <div className="mb-4 p-4 bg-amber-600 text-white rounded-lg text-center font-bold">
+          <div className="mb-4 p-4 bg-amber-700 text-amber-50 rounded-lg text-center text-xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
             Пат! Ничья
           </div>
         )}
 
         {status === 'resigned' && (
-          <div className="mb-4 p-4 bg-neutral-600 text-white rounded-lg text-center font-bold">
+          <div className="mb-4 p-4 bg-stone-700 text-amber-50 rounded-lg text-center text-xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
             Игрок сдался
           </div>
         )}
@@ -115,6 +112,9 @@ function App() {
               onSquareClick={handleSquareClick}
               flipped={flipped}
               gameStarted={gameStarted}
+              onRookTeleport={handleRookTeleport}
+              playerColor={playerColor}
+              status={status}
             />
             </div>
           </div>
@@ -149,7 +149,7 @@ function App() {
 
       {/* Toast уведомление */}
       {showCopiedToast && (
-        <div className="fixed bottom-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
+        <div className="fixed bottom-4 right-4 bg-amber-700 text-amber-50 px-4 py-2 rounded-lg shadow-lg animate-fade-in" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
           ✓ Ссылка скопирована!
         </div>
       )}

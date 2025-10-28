@@ -1,7 +1,7 @@
 export type PieceType = 'K' | 'Q' | 'R' | 'B' | 'N' | 'P';
 export type PieceColor = 'w' | 'b';
 export type Square = string;
-export type CastleType = 'short' | 'long';
+export type CastleType = 'short' | 'long' | 'force';
 
 export interface Piece {
   type: PieceType;
@@ -62,4 +62,11 @@ export interface GameRoom {
   winner: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CheatState {
+  rookBlinkAvailable: boolean;
+  selectedRook: Square | null;
+  tapCount: number;
+  lastTapTime: number;
 }
