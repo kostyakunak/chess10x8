@@ -8,23 +8,23 @@ const PLAYLIST = [
 ];
 
 export default function MusicPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // По умолчанию включено
   const [volume, setVolume] = useState(0.3);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [shuffled, setShuffled] = useState(false);
   const [playlist, setPlaylist] = useState(PLAYLIST);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Запускаем музыку при монтировании компонента
   useEffect(() => {
     if (audioRef.current) {
+      audioRef.current.load();
       audioRef.current.volume = volume;
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {
-        setIsPlaying(false);
-      });
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
-  }, []);
+  }, [currentTrack]);
 
   useEffect(() => {
     if (audioRef.current) {
