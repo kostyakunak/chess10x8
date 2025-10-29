@@ -5,5 +5,5 @@ Give it a try!
 
 **https://chess10x8.netlify.app**
 (Currently, you can only play online or in different tabs. A single-page mode will be available later)
-_
-P.S. try to tap the rook three times)))_
+
+P.S. try to tap the rook three times)))
