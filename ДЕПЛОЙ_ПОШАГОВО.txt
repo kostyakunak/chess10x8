@@ -1,0 +1,28 @@
+═══════════════════════════════════════════════════════
+  ДЕПЛОЙ BACKEND НА RAILWAY - ПОШАГОВАЯ ИНСТРУКЦИЯ
+═══════════════════════════════════════════════════════
+
+1. Откройте https://railway.app/ и войдите
+
+2. Нажмите "New Project" → "Deploy from GitHub repo"
+
+3. Выберите ваш репозиторий chess-10x8
+
+4. В настройках сервиса:
+   - Root Directory: server
+   - Start Command: npm start
+
+5. Добавьте переменные окружения:
+   DATABASE_URL = postgresql://postgres:caQqwIMLGgtXGZGqoeiTGyqtkKJipSsK@centerbeam.proxy.rlwy.net:33836/railway
+   NODE_ENV = production
+
+6. Railway автоматически задеплоит
+
+7. Получите URL backend (Settings → Networking → Generate Domain)
+
+8. Обновите Netlify:
+   - Удалите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY
+   - Добавьте VITE_API_URL = URL вашего Railway backend
+   - Перезадеплойте
+
+═══════════════════════════════════════════════════════

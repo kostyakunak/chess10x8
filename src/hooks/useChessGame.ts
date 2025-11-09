@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase, GameRoom, GameMove } from '../lib/supabase';
+import { getRoom, createRoom, updateRoom, getMoves, addMove, wsManager, GameRoom, GameMove } from '../lib/api';
 import { Position, Move, Square, PieceColor, PieceType, LegalMove } from '../types/chess';
 import { getInitialPosition, parseFEN, generateFEN } from '../engine/board';
 import { getLegalMoves, makeMove, isInCheck, hasLegalMoves } from '../engine/moves';
@@ -39,134 +39,118 @@ export function useChessGame(roomId: string | null) {
 
   const loadGameState = useCallback(async (roomId: string) => {
     console.log('🔄 loadGameState called for room:', roomId);
-    const { data: room, error } = await supabase
-      .from('game_rooms')
-      .select('*')
-      .eq('id', roomId)
-      .maybeSingle();
+    try {
+      const room = await getRoom(roomId);
 
-    console.log('📊 Room data:', { room, error });
-    if (error || !room) {
-      console.error('❌ Error loading room or room not found:', error);
-      return;
-    }
-
-    // Версионирование: игнорируем старые обновления
-    if (lastAppliedUpdate && room.updated_at && room.updated_at <= lastAppliedUpdate) {
-      console.log('⏭️ Skipping outdated update:', room.updated_at, '<=', lastAppliedUpdate);
-      return;
-    }
-    
-    console.log('✅ Applying update:', room.updated_at);
-    setLastAppliedUpdate(room.updated_at);
-
-    const { data: moves } = await supabase
-      .from('game_moves')
-      .select('*')
-      .eq('room_id', roomId)
-      .order('move_number', { ascending: true });
-
-    const fenData = parseFEN(room.fen);
-    setPosition(fenData.position);
-    setActiveColor(fenData.activeColor as PieceColor);
-    setCastlingRights(fenData.castlingRights);
-    setEnPassant(fenData.enPassant);
-    setHalfmoveClock(fenData.halfmoveClock);
-    setFullmoveNumber(fenData.fullmoveNumber);
-    setStatus(room.status);
-    setGameStarted(room.game_started);
-
-    console.log('📍 Position loaded:', fenData.position);
-    console.log('📊 History loaded:', moves?.length || 0, 'moves');
-    
-    if (moves) {
-      const moveHistory: Move[] = moves.map(m => ({
-        from: m.from_square,
-        to: m.to_square,
-        piece: m.piece as PieceType,
-        color: m.color as PieceColor,
-        captured: m.captured_piece as PieceType | undefined,
-        promotion: m.promotion as PieceType | undefined,
-        castleType: m.castle_type as 'short' | 'long' | undefined,
-        isEnPassant: m.is_en_passant,
-        isCheck: m.is_check,
-        isCheckmate: m.is_checkmate,
-        san: m.san,
-      }));
-      setHistory(moveHistory);
-      console.log('✅ History set:', moveHistory);
-
-      if (moveHistory.length > 0) {
-        const lastM = moveHistory[moveHistory.length - 1];
-        setLastMove({ from: lastM.from, to: lastM.to });
-        console.log('🎯 Last move:', lastM);
+      console.log('📊 Room data:', { room });
+      if (!room) {
+        console.error('❌ Room not found');
+        return;
       }
-    }
 
-    console.log('👤 Player assignment', {
-      playerId,
-      whitePlayer: room.white_player_id,
-      blackPlayer: room.black_player_id,
-      isGameStarted: room.game_started
-    });
+      // Версионирование: игнорируем старые обновления
+      if (lastAppliedUpdate && room.updated_at && room.updated_at <= lastAppliedUpdate) {
+        console.log('⏭️ Skipping outdated update:', room.updated_at, '<=', lastAppliedUpdate);
+        return;
+      }
+      
+      console.log('✅ Applying update:', room.updated_at);
+      setLastAppliedUpdate(room.updated_at);
 
-    // Умный merge: не затираем playerColor если он уже установлен
-    let shouldAssignPlayer = false;
-    if (room.white_player_id === playerId) {
-      if (playerColor !== 'w') {
-        console.log('✅ Player is white (setting)');
-        setPlayerColor('w');
-      }
-      console.log('✅ White player: gameStarted =', room.game_started);
-    } else if (room.black_player_id === playerId) {
-      if (playerColor !== 'b') {
-        console.log('✅ Player is black (setting)');
-        setPlayerColor('b');
-      }
-      console.log('✅ Black player: gameStarted =', room.game_started);
-    } else {
-      shouldAssignPlayer = true;
-      if (!room.white_player_id) {
-        console.log('🤍 Assigning player as white (first player)');
-        setPlayerColor('w');
-        const result = await supabase
-          .from('game_rooms')
-          .update({ white_player_id: playerId })
-          .eq('id', roomId);
-        console.log('🤍 Updated white_player_id:', result);
-        setGameStarted(false);
-        setStatus('waiting');
-        console.log('🤍 Game started set to: false, status: waiting');
-      } else if (!room.black_player_id) {
-        console.log('⚫ Assigning player as black (second player)');
-        setPlayerColor('b');
-        let gameStartedUpdate = false;
-        if (!room.game_started) {
-          gameStartedUpdate = true;
+      const moves = await getMoves(roomId);
+
+      const fenData = parseFEN(room.fen);
+      setPosition(fenData.position);
+      setActiveColor(fenData.activeColor as PieceColor);
+      setCastlingRights(fenData.castlingRights);
+      setEnPassant(fenData.enPassant);
+      setHalfmoveClock(fenData.halfmoveClock);
+      setFullmoveNumber(fenData.fullmoveNumber);
+      setStatus(room.status);
+      setGameStarted(room.game_started);
+
+      console.log('📍 Position loaded:', fenData.position);
+      console.log('📊 History loaded:', moves?.length || 0, 'moves');
+      
+      if (moves) {
+        const moveHistory: Move[] = moves.map(m => ({
+          from: m.from_square,
+          to: m.to_square,
+          piece: m.piece as PieceType,
+          color: m.color as PieceColor,
+          captured: m.captured_piece as PieceType | undefined,
+          promotion: m.promotion as PieceType | undefined,
+          castleType: m.castle_type as 'short' | 'long' | undefined,
+          isEnPassant: m.is_en_passant,
+          isCheck: m.is_check,
+          isCheckmate: m.is_checkmate,
+          san: m.san,
+        }));
+        setHistory(moveHistory);
+        console.log('✅ History set:', moveHistory);
+
+        if (moveHistory.length > 0) {
+          const lastM = moveHistory[moveHistory.length - 1];
+          setLastMove({ from: lastM.from, to: lastM.to });
+          console.log('🎯 Last move:', lastM);
         }
-        const result = await supabase
-          .from('game_rooms')
-          .update({
+      }
+
+      console.log('👤 Player assignment', {
+        playerId,
+        whitePlayer: room.white_player_id,
+        blackPlayer: room.black_player_id,
+        isGameStarted: room.game_started
+      });
+
+      // Умный merge: не затираем playerColor если он уже установлен
+      if (room.white_player_id === playerId) {
+        if (playerColor !== 'w') {
+          console.log('✅ Player is white (setting)');
+          setPlayerColor('w');
+        }
+        console.log('✅ White player: gameStarted =', room.game_started);
+      } else if (room.black_player_id === playerId) {
+        if (playerColor !== 'b') {
+          console.log('✅ Player is black (setting)');
+          setPlayerColor('b');
+        }
+        console.log('✅ Black player: gameStarted =', room.game_started);
+      } else {
+        if (!room.white_player_id) {
+          console.log('🤍 Assigning player as white (first player)');
+          setPlayerColor('w');
+          await updateRoom(roomId, { white_player_id: playerId });
+          console.log('🤍 Updated white_player_id');
+          setGameStarted(false);
+          setStatus('waiting');
+          console.log('🤍 Game started set to: false, status: waiting');
+        } else if (!room.black_player_id) {
+          console.log('⚫ Assigning player as black (second player)');
+          setPlayerColor('b');
+          await updateRoom(roomId, {
             black_player_id: playerId,
             game_started: true,
             status: 'active'
-          })
-          .eq('id', roomId);
-        console.log('⚫ Updated black_player_id and gameStarted:', result);
-        // Всегда устанавливаем gameStarted=true когда черный игрок присоединяется
-        setGameStarted(true);
-        setStatus('active');
-        console.log('🎮 Game started! setGameStarted(true) called');
+          });
+          console.log('⚫ Updated black_player_id and gameStarted');
+          // Всегда устанавливаем gameStarted=true когда черный игрок присоединяется
+          setGameStarted(true);
+          setStatus('active');
+          console.log('🎮 Game started! setGameStarted(true) called');
+        }
       }
-    }
-    
-    console.log('✅ loadGameState completed for player:', playerId);
+      
+      console.log('✅ loadGameState completed for player:', playerId);
 
-    if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
-      const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
-      setKingInCheck(kingSquare);
-    } else {
-      setKingInCheck(null);
+      if (isInCheck(fenData.position, fenData.activeColor as PieceColor)) {
+        const kingSquare = findKingSquare(fenData.position, fenData.activeColor as PieceColor);
+        setKingInCheck(kingSquare);
+      } else {
+        setKingInCheck(null);
+      }
+    } catch (error) {
+      console.error('❌ Error loading game state:', error);
     }
   }, [playerId, findKingSquare, lastAppliedUpdate, playerColor]);
 
@@ -176,9 +160,8 @@ export function useChessGame(roomId: string | null) {
     const fen = generateFEN(initialPosition, 'w', 'KQkq', '-', 0, 1);
 
     console.log('📤 Creating room in database...');
-    const { data, error } = await supabase
-      .from('game_rooms')
-      .insert({
+    try {
+      const data = await createRoom({
         fen,
         active_color: 'w',
         castling_rights: 'KQkq',
@@ -188,16 +171,9 @@ export function useChessGame(roomId: string | null) {
         status: 'waiting',
         game_started: false,
         white_player_id: playerId,
-      })
-      .select()
-      .single();
+      });
 
-    if (error || !data) {
-      console.error('❌ Error creating game:', error);
-      return;
-    }
-
-    console.log('✅ Room created with ID:', data.id);
+      console.log('✅ Room created with ID:', data.id);
 
     setCurrentRoomId(data.id);
     setPosition(initialPosition);
@@ -217,6 +193,9 @@ export function useChessGame(roomId: string | null) {
 
     const newUrl = `${window.location.origin}?room=${data.id}`;
     window.history.pushState({}, '', newUrl);
+    } catch (error) {
+      console.error('❌ Error creating game:', error);
+    }
   }, [playerId]);
 
   const executeMove = useCallback(async (from: Square, to: Square, promotion?: PieceType) => {
@@ -264,38 +243,31 @@ export function useChessGame(roomId: string | null) {
     const fen = generateFEN(newPosition, newActiveColor, newCastlingRights, newEnPassant, newHalfmove, newFullmove);
 
     if (currentRoomId) {
-      await supabase
-        .from('game_rooms')
-        .update({
-          fen,
-          active_color: newActiveColor,
-          castling_rights: newCastlingRights,
-          en_passant: newEnPassant,
-          halfmove_clock: newHalfmove,
-          fullmove_number: newFullmove,
-          status: isCheckmate ? 'checkmate' : 'active',
-          winner: isCheckmate ? (activeColor === 'w' ? 'white' : 'black') : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', currentRoomId);
+      await updateRoom(currentRoomId, {
+        fen,
+        active_color: newActiveColor,
+        castling_rights: newCastlingRights,
+        en_passant: newEnPassant,
+        halfmove_clock: newHalfmove,
+        fullmove_number: newFullmove,
+        status: isCheckmate ? 'checkmate' : 'active',
+        winner: isCheckmate ? (activeColor === 'w' ? 'white' : 'black') : null,
+      });
 
-      await supabase
-        .from('game_moves')
-        .insert({
-          room_id: currentRoomId,
-          move_number: history.length + 1,
-          color: piece.color,
-          from_square: from,
-          to_square: to,
-          piece: piece.type,
-          promotion: promotion || null,
-          castle_type: move.castleType || null,
-          captured_piece: move.captured || null,
-          is_en_passant: move.isEnPassant || false,
-          is_check: isCheck,
-          is_checkmate: isCheckmate,
-          san: moveRecord.san,
-        });
+      await addMove(currentRoomId, {
+        move_number: history.length + 1,
+        color: piece.color,
+        from_square: from,
+        to_square: to,
+        piece: piece.type,
+        promotion: promotion || null,
+        castle_type: move.castleType || null,
+        captured_piece: move.captured || null,
+        is_en_passant: move.isEnPassant || false,
+        is_check: isCheck,
+        is_checkmate: isCheckmate,
+        san: moveRecord.san,
+      });
     }
 
     setPosition(newPosition);
@@ -380,13 +352,10 @@ export function useChessGame(roomId: string | null) {
   const handleResign = useCallback(async () => {
     if (!currentRoomId || !playerColor) return;
 
-    await supabase
-      .from('game_rooms')
-      .update({
-        status: 'resigned',
-        winner: playerColor === 'w' ? 'black' : 'white',
-      })
-      .eq('id', currentRoomId);
+    await updateRoom(currentRoomId, {
+      status: 'resigned',
+      winner: playerColor === 'w' ? 'black' : 'white',
+    });
 
     setStatus('resigned');
   }, [currentRoomId, playerColor]);
@@ -420,29 +389,22 @@ export function useChessGame(roomId: string | null) {
     const fen = generateFEN(newPosition, newActiveColor, castlingRights, enPassant, halfmoveClock, fullmoveNumber);
 
     if (currentRoomId) {
-      await supabase
-        .from('game_rooms')
-        .update({
-          fen,
-          active_color: newActiveColor,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', currentRoomId);
+      await updateRoom(currentRoomId, {
+        fen,
+        active_color: newActiveColor,
+      });
 
-      await supabase
-        .from('game_moves')
-        .insert({
-          room_id: currentRoomId,
-          move_number: history.length + 1,
-          color: myRook.color,
-          from_square: fromSquare,
-          to_square: toSquare,
-          piece: 'R',
-          castle_type: 'force',
-          san: 'O-O',
-          is_check: false,
-          is_checkmate: false,
-        });
+      await addMove(currentRoomId, {
+        move_number: history.length + 1,
+        color: myRook.color,
+        from_square: fromSquare,
+        to_square: toSquare,
+        piece: 'R',
+        castle_type: 'force',
+        san: 'O-O',
+        is_check: false,
+        is_checkmate: false,
+      });
     }
 
     setPosition(newPosition);
@@ -476,63 +438,57 @@ export function useChessGame(roomId: string | null) {
     });
   }, [playerColor, gameStarted, status, activeColor, playerId]);
 
-  // Realtime subscription - single channel per roomId
+  // WebSocket subscription for realtime updates
   useEffect(() => {
     if (!currentRoomId) return;
 
-    console.log('🔔 Setting up realtime subscription for room:', currentRoomId);
+    console.log('🔔 Setting up WebSocket connection for room:', currentRoomId);
+    wsManager.connect(currentRoomId);
 
-    const channel = supabase
-      .channel(`room:${currentRoomId}`, {
-        config: {
-          broadcast: { ack: true },
-          presence: { key: playerId }
-        }
-      })
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'game_rooms',
-        filter: `id=eq.${currentRoomId}`,
-      }, (payload) => {
-        console.log('🔔 postgres_changes:', payload);
-        loadGameState(currentRoomId);
-      })
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'game_moves',
-        filter: `room_id=eq.${currentRoomId}`,
-      }, (payload) => {
-        console.log('🔔 game_moves INSERT:', payload);
-        loadGameState(currentRoomId);
-      })
-      .on('broadcast', { event: 'move' }, ({ payload }) => {
-        console.log('🔔 broadcast move:', payload);
-        // Handle move application directly
-      })
-      .subscribe((status) => {
-        console.log('🔔 Subscription status:', status);
-      });
+    // Subscribe to room updates
+    const unsubscribeRoom = wsManager.on('room_updated', (message) => {
+      console.log('🔔 Room updated via WebSocket:', message);
+      loadGameState(currentRoomId);
+    });
 
-    // Polling fallback only when subscription is not SUBSCRIBED
+    // Subscribe to move additions
+    const unsubscribeMove = wsManager.on('move_added', (message) => {
+      console.log('🔔 Move added via WebSocket:', message);
+      loadGameState(currentRoomId);
+    });
+
+    // Polling fallback if WebSocket is not connected
     let pollInterval: NodeJS.Timeout | null = null;
     
-    const subscribeStatus = channel.state;
-    if (subscribeStatus !== 'SUBSCRIBED') {
-      console.log('⚠️ Realtime not subscribed, activating polling');
-      pollInterval = setInterval(() => {
-        console.log('🔄 Polling: checking for updates...');
-        loadGameState(currentRoomId);
-      }, 3000);
-    }
+    const checkConnection = () => {
+      if (!wsManager.isConnected()) {
+        console.log('⚠️ WebSocket not connected, activating polling');
+        if (!pollInterval) {
+          pollInterval = setInterval(() => {
+            console.log('🔄 Polling: checking for updates...');
+            loadGameState(currentRoomId);
+          }, 3000);
+        }
+      } else if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+        console.log('✅ WebSocket connected, stopping polling');
+      }
+    };
+
+    // Check connection immediately and periodically
+    checkConnection();
+    const connectionCheckInterval = setInterval(checkConnection, 5000);
 
     return () => {
-      console.log('🔕 Cleaning up subscription for room:', currentRoomId);
+      console.log('🔕 Cleaning up WebSocket connection for room:', currentRoomId);
       if (pollInterval) clearInterval(pollInterval);
-      supabase.removeChannel(channel);
+      clearInterval(connectionCheckInterval);
+      unsubscribeRoom();
+      unsubscribeMove();
+      wsManager.disconnect();
     };
-  }, [currentRoomId]); // Убрали loadGameState из deps!
+  }, [currentRoomId, loadGameState]);
 
   return {
     position,
