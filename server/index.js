@@ -51,6 +51,32 @@ wss.on('connection', (ws, req) => {
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
   });
+
+  // Handle incoming messages from clients
+  ws.on('message', (data) => {
+    try {
+      const message = JSON.parse(data.toString());
+      
+      // If client sends a broadcast message, relay it to all other clients in the room
+      if (message.type === 'broadcast') {
+        const connections = roomConnections.get(roomId);
+        if (connections) {
+          const broadcastMessage = JSON.stringify({
+            type: message.eventType,
+            ...message.data
+          });
+          connections.forEach((client) => {
+            // Don't send back to the sender
+            if (client !== ws && client.readyState === client.OPEN) {
+              client.send(broadcastMessage);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error handling WebSocket message:', error);
+    }
+  });
 });
 
 // Broadcast to all connections in a room

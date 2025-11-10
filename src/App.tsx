@@ -117,6 +117,7 @@ function App() {
               playerColor={playerColor}
               status={status}
               externalTeleport={externalTeleport}
+              currentRoomId={currentRoomId}
             />
             </div>
           </div>

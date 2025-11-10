@@ -3,6 +3,7 @@ import { Position, Square, LegalMove, PieceType, CheatState } from '../types/che
 import { FILES, RANKS } from '../engine/board';
 import { King, Crown, Castle, Zap } from 'lucide-react';
 import ChessPiece from './ChessPiece';
+import { wsManager } from '../lib/api';
 
 interface ChessBoardProps {
   position: Position;
@@ -17,6 +18,7 @@ interface ChessBoardProps {
   playerColor: 'w' | 'b' | null;
   status: string;
   externalTeleport?: { from: Square; to: Square } | null;
+  currentRoomId?: string | null;
 }
 
 // Удалено: больше не используем Unicode символы
@@ -34,6 +36,7 @@ export default function ChessBoard({
   playerColor,
   status,
   externalTeleport,
+  currentRoomId,
 }: ChessBoardProps) {
   const [draggedSquare, setDraggedSquare] = useState<Square | null>(null);
   const [cheatState, setCheatState] = useState<CheatState>({
@@ -104,6 +107,14 @@ export default function ChessBoard({
         tapCount: 0,
         lastTapTime: 0,
       });
+      
+      // Broadcast rook selection to other players via WebSocket
+      if (currentRoomId) {
+        wsManager.send('rook_selected', {
+          square,
+          playerColor,
+        });
+      }
     }
   };
 
@@ -146,6 +157,24 @@ export default function ChessBoard({
       }, 1000);
     }
   }, [externalTeleport]);
+
+  // Handle external rook selection (god mode activation from opponent)
+  useEffect(() => {
+    if (!currentRoomId) return;
+
+    const unsubscribeRookSelected = wsManager.on('rook_selected', (message) => {
+      // Only show blinking if it's from the opponent
+      if (message.playerColor !== playerColor) {
+        console.log('🔔 Rook selected by opponent:', message);
+        setBlinkingSquare(message.square);
+        setTimeout(() => setBlinkingSquare(null), 1000);
+      }
+    });
+
+    return () => {
+      unsubscribeRookSelected();
+    };
+  }, [currentRoomId, playerColor]);
 
   return (
     <div className="relative">

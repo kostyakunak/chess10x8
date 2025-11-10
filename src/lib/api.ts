@@ -121,6 +121,19 @@ class WebSocketManager {
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
   }
+
+  send(eventType: string, data: any) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'broadcast',
+        eventType,
+        data
+      });
+      this.ws.send(message);
+    } else {
+      console.warn('WebSocket not connected, cannot send message');
+    }
+  }
 }
 
 export const wsManager = new WebSocketManager();
