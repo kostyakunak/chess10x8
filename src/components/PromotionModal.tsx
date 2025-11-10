@@ -1,14 +1,10 @@
 import { PieceColor, PieceType } from '../types/chess';
+import ChessPiece from './ChessPiece';
 
 interface PromotionModalProps {
   color: PieceColor;
   onSelect: (piece: PieceType) => void;
 }
-
-const PIECE_SYMBOLS: { [key: string]: string } = {
-  'wQ': '♕', 'wR': '♖', 'wB': '♗', 'wN': '♘',
-  'bQ': '♛', 'bR': '♜', 'bB': '♝', 'bN': '♞',
-};
 
 export default function PromotionModal({ color, onSelect }: PromotionModalProps) {
   const pieces: PieceType[] = ['Q', 'R', 'B', 'N'];
@@ -24,9 +20,9 @@ export default function PromotionModal({ color, onSelect }: PromotionModalProps)
             <button
               key={piece}
               onClick={() => onSelect(piece)}
-              className="w-20 h-20 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center justify-center text-6xl transition-colors shadow-md hover:shadow-lg transform hover:scale-105"
+              className="w-20 h-20 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center justify-center transition-colors shadow-md hover:shadow-lg transform hover:scale-105 p-2"
             >
-              {PIECE_SYMBOLS[`${color}${piece}`]}
+              <ChessPiece color={color} type={piece} size={64} />
             </button>
           ))}
         </div>

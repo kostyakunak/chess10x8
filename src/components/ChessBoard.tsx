@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Position, Square, LegalMove, PieceType, CheatState } from '../types/chess';
 import { FILES, RANKS } from '../engine/board';
 import { King, Crown, Castle, Zap } from 'lucide-react';
+import ChessPiece from './ChessPiece';
 
 interface ChessBoardProps {
   position: Position;
@@ -17,10 +18,7 @@ interface ChessBoardProps {
   status: string;
 }
 
-const PIECE_SYMBOLS: { [key: string]: string } = {
-  'wK': '♔', 'wQ': '♕', 'wR': '♖', 'wB': '♗', 'wN': '♘', 'wP': '♙',
-  'bK': '♚', 'bQ': '♛', 'bR': '♜', 'bB': '♝', 'bN': '♞', 'bP': '♟',
-};
+// Удалено: больше не используем Unicode символы
 
 export default function ChessBoard({
   position,
@@ -251,13 +249,13 @@ export default function ChessBoard({
                         justifyContent: 'center',
                         width: '100%',
                         height: '100%',
-                        fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-                        lineHeight: '1',
-                        fontFamily: 'Arial, "Segoe UI Emoji", sans-serif',
                         filter: isTeleportingPiece ? 'drop-shadow(0 0 15px #8b5cf6)' : 'none',
                       }}
                     >
-                      {PIECE_SYMBOLS[`${piece.color}${piece.type}`]}
+                      <ChessPiece 
+                        color={piece.color} 
+                        type={piece.type}
+                      />
                     </div>
                   )}
 
