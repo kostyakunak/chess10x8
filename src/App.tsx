@@ -42,6 +42,7 @@ function App() {
     handleOfferDraw,
     createNewGame,
     handleRookTeleport,
+    externalTeleport,
   } = useChessGame(roomId);
 
   // Автоматически переворачиваем доску для черных
@@ -115,6 +116,7 @@ function App() {
               onRookTeleport={handleRookTeleport}
               playerColor={playerColor}
               status={status}
+              externalTeleport={externalTeleport}
             />
             </div>
           </div>

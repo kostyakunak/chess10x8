@@ -438,6 +438,9 @@ export function useChessGame(roomId: string | null) {
     });
   }, [playerColor, gameStarted, status, activeColor, playerId]);
 
+  // Handle external teleport animation (from opponent via WebSocket)
+  const [externalTeleport, setExternalTeleport] = useState<{ from: Square; to: Square } | null>(null);
+
   // WebSocket subscription for realtime updates
   useEffect(() => {
     if (!currentRoomId) return;
@@ -454,6 +457,17 @@ export function useChessGame(roomId: string | null) {
     // Subscribe to move additions
     const unsubscribeMove = wsManager.on('move_added', (message) => {
       console.log('🔔 Move added via WebSocket:', message);
+      loadGameState(currentRoomId);
+    });
+
+    // Subscribe to teleport moves - trigger animation for opponent
+    const unsubscribeTeleport = wsManager.on('teleport_move', (message) => {
+      console.log('🔔 Teleport move via WebSocket:', message);
+      // Trigger teleport animation
+      setExternalTeleport({ from: message.from_square, to: message.to_square });
+      // Clear after animation
+      setTimeout(() => setExternalTeleport(null), 1100);
+      // Also update game state
       loadGameState(currentRoomId);
     });
 
@@ -486,6 +500,7 @@ export function useChessGame(roomId: string | null) {
       clearInterval(connectionCheckInterval);
       unsubscribeRoom();
       unsubscribeMove();
+      unsubscribeTeleport();
       wsManager.disconnect();
     };
   }, [currentRoomId, loadGameState]);
@@ -509,5 +524,6 @@ export function useChessGame(roomId: string | null) {
     handleOfferDraw,
     createNewGame,
     handleRookTeleport,
+    externalTeleport,
   };
 }

@@ -223,7 +223,18 @@ app.post('/api/rooms/:roomId/moves', async (req, res) => {
     );
 
     // Broadcast new move to WebSocket clients
-    broadcastToRoom(roomId, { type: 'move_added', move: result.rows[0] });
+    const moveData = result.rows[0];
+    broadcastToRoom(roomId, { type: 'move_added', move: moveData });
+    
+    // If this is a teleport move (castle_type: 'force'), send special event
+    if (castle_type === 'force') {
+      broadcastToRoom(roomId, { 
+        type: 'teleport_move', 
+        from_square: from_square,
+        to_square: to_square,
+        move: moveData
+      });
+    }
 
     res.json(result.rows[0]);
   } catch (error) {

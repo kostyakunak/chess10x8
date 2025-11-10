@@ -16,6 +16,7 @@ interface ChessBoardProps {
   onRookTeleport?: (fromSquare: Square, toSquare: Square) => void;
   playerColor: 'w' | 'b' | null;
   status: string;
+  externalTeleport?: { from: Square; to: Square } | null;
 }
 
 // Удалено: больше не используем Unicode символы
@@ -32,6 +33,7 @@ export default function ChessBoard({
   onRookTeleport,
   playerColor,
   status,
+  externalTeleport,
 }: ChessBoardProps) {
   const [draggedSquare, setDraggedSquare] = useState<Square | null>(null);
   const [cheatState, setCheatState] = useState<CheatState>({
@@ -42,6 +44,7 @@ export default function ChessBoard({
   });
   const [teleporting, setTeleporting] = useState(false);
   const [blinkingSquare, setBlinkingSquare] = useState<Square | null>(null);
+  const [externalTeleportSquares, setExternalTeleportSquares] = useState<{ from: Square; to: Square } | null>(null);
 
   const files = flipped ? [...FILES].reverse() : FILES;
   const ranks = flipped ? RANKS : [...RANKS].reverse();
@@ -131,6 +134,19 @@ export default function ChessBoard({
     }
   }, [cheatState]);
 
+  // Handle external teleport animation (from opponent)
+  useEffect(() => {
+    if (externalTeleport) {
+      console.log('🎬 External teleport animation triggered:', externalTeleport);
+      setExternalTeleportSquares(externalTeleport);
+      setTeleporting(true);
+      setTimeout(() => {
+        setTeleporting(false);
+        setExternalTeleportSquares(null);
+      }, 1000);
+    }
+  }, [externalTeleport]);
+
   return (
     <div className="relative">
       {status === 'checkmate' && (
@@ -208,7 +224,12 @@ export default function ChessBoard({
               }
 
               const isBlinking = blinkingSquare === square;
-              const isTeleportingPiece = teleporting && (cheatState.selectedRook === square || position[square]?.type === 'R');
+              const isTeleportingPiece = teleporting && (
+                cheatState.selectedRook === square || 
+                position[square]?.type === 'R' ||
+                externalTeleportSquares?.from === square ||
+                externalTeleportSquares?.to === square
+              );
 
               return (
                 <button
