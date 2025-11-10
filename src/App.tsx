@@ -86,7 +86,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 p-2 sm:p-4 md:p-8 pb-16 sm:pb-8">
       <MusicPlayer />
       <div className="max-w-7xl mx-auto">
         {status === 'stalemate' && (
@@ -101,9 +101,9 @@ function App() {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start justify-center">
-          <div className="flex justify-center w-full lg:w-auto">
-            <div className="max-w-[min(90vw,820px)]">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start justify-center">
+          <div className="flex justify-center w-full lg:w-auto px-2 sm:px-4">
+            <div className="max-w-[min(calc(100vw-1rem),820px)] w-full">
               <ChessBoard
               position={position}
               legalMoves={legalMoves}

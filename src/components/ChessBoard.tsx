@@ -200,12 +200,12 @@ export default function ChessBoard({
           </div>
         </>
       )}
-    <div className={`inline-block bg-stone-800 p-6 rounded-xl shadow-2xl relative border-4 border-amber-900/50 ${teleporting ? 'board-teleporting' : ''}`}>
+    <div className={`inline-block bg-stone-800 p-2 sm:p-4 md:p-6 rounded-xl shadow-2xl relative border-2 sm:border-4 border-amber-900/50 ${teleporting ? 'board-teleporting' : ''}`}>
       {!gameStarted && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg z-10">
-          <div className="text-amber-100 text-center">
-            <div className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Ожидание второго игрока...</div>
-            <div className="text-base italic">Игра начнётся как только присоединится второй игрок</div>
+          <div className="text-amber-100 text-center px-4">
+            <div className="text-lg xs:text-xl sm:text-2xl font-semibold mb-2" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Ожидание второго игрока...</div>
+            <div className="text-sm xs:text-base italic">Игра начнётся как только присоединится второй игрок</div>
           </div>
         </div>
       )}
@@ -214,7 +214,7 @@ export default function ChessBoard({
         {files.map(file => (
           <div
             key={file}
-            className="h-6 flex items-center justify-center text-sm font-medium text-amber-200"
+            className="h-4 xs:h-5 sm:h-6 flex items-center justify-center text-xs xs:text-sm font-medium text-amber-200"
             style={{ fontFamily: 'Cormorant Garamond, serif' }}
           >
             {file}
@@ -225,7 +225,7 @@ export default function ChessBoard({
           <>
             <div
               key={`rank-${rank}`}
-              className="w-6 flex items-center justify-center text-sm font-medium text-amber-200"
+              className="w-4 xs:w-5 sm:w-6 flex items-center justify-center text-xs xs:text-sm font-medium text-amber-200"
               style={{ fontFamily: 'Cormorant Garamond, serif' }}
             >
               {rank}
@@ -280,10 +280,10 @@ export default function ChessBoard({
                   onDrop={() => gameStarted && handleDrop(square)}
                   disabled={!gameStarted}
                   className={`
-                    relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+                    relative w-8 h-8 xs:w-9 xs:h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16
                     ${bgColor}
                     transition-all duration-200
-                    ${isCheck ? 'animate-pulse ring-4 ring-red-500' : ''}
+                    ${isCheck ? 'animate-pulse ring-2 sm:ring-4 ring-red-500' : ''}
                     ${gameStarted ? 'hover:brightness-110' : 'cursor-not-allowed opacity-50'}
                     ${isBlinking ? 'teleport-active' : ''}
                   `}
@@ -312,20 +312,20 @@ export default function ChessBoard({
                   {legalMove && !piece && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       {legalMove.castleType ? (
-                        <Castle className="w-6 h-6 text-amber-700 opacity-60" />
+                        <Castle className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 text-amber-700 opacity-60" />
                       ) : (
-                        <div className="w-3 h-3 rounded-full bg-stone-700 opacity-50" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-stone-700 opacity-50" />
                       )}
                     </div>
                   )}
 
                   {legalMove && piece && (
-                    <div className="absolute inset-0 border-4 border-red-500 opacity-50 pointer-events-none" />
+                    <div className="absolute inset-0 border-2 sm:border-4 border-red-500 opacity-50 pointer-events-none" />
                   )}
 
                   {isCorridor && !piece && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-15">
-                      <Zap className="w-4 h-4 text-amber-700" />
+                      <Zap className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-amber-700" />
                     </div>
                   )}
                 </button>
