@@ -325,7 +325,7 @@ export default function ChessBoard({
 
                   {isCorridor && !piece && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-15">
-                      <Zap className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-amber-700" />
+                      <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-amber-700" />
                     </div>
                   )}
                 </button>
